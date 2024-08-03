@@ -82,3 +82,15 @@ class FileStorage:
                         return values
             return None
         return None
+    
+    def count(self, cls=None):
+        """A method to count the number of objects in storage"""
+        if not cls:
+            cnt_obj = self.all(cls)
+            return len(cnt_obj)
+        
+        if cls in classes.values():
+            all_cls = self.all(cls)
+            return len(all_cls)
+        if cls not in classes.values.all():
+            return None
