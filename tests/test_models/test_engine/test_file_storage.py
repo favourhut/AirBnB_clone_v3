@@ -113,3 +113,58 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_get(self):
+        """Test that get retrieves the correct object"""
+        storage = FileStorage()
+        # Create new objects and save them
+        state = State(name="California")
+        city = City(name="San Francisco", state_id=state.id)
+        user = User(email="user@example.com", password="password")
+        storage.new(state)
+        storage.new(city)
+        storage.new(user)
+        storage.save()
+
+        # Test get method
+        retrieved_state = storage.get(State, state.id)
+        self.assertIsNotNone(retrieved_state)
+        self.assertEqual(retrieved_state.id, state.id)
+        self.assertEqual(retrieved_state.name, "California")
+
+        retrieved_user = storage.get(User, user.id)
+        self.assertIsNotNone(retrieved_user)
+        self.assertEqual(retrieved_user.email, "user@example.com")
+
+        non_existent = storage.get(State, "nonexistent_id")
+        self.assertIsNone(non_existent)
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_count(self):
+        """Test that count returns the correct number of objects"""
+        storage = FileStorage()
+        # Create new objects and save them
+        state = State(name="California")
+        city = City(name="San Francisco", state_id=state.id)
+        user = User(email="user@example.com", password="password")
+        storage.new(state)
+        storage.new(city)
+        storage.new(user)
+        storage.save()
+
+        # Test count method
+        total_count = storage.count()
+        self.assertEqual(total_count, 3)  # 1 State, 1 City, 1 User
+
+        state_count = storage.count(State)
+        self.assertEqual(state_count, 1)
+
+        city_count = storage.count(City)
+        self.assertEqual(city_count, 1)
+
+        user_count = storage.count(User)
+        self.assertEqual(user_count, 1)
+
+        non_existent_count = storage.count("NonExistentClass")
+        self.assertEqual(non_existent_count, 0)

@@ -68,11 +68,11 @@ test_db_storage.py'])
                             "{:s} method needs a docstring".format(func[0]))
 
 
-class TestFileStorage(unittest.TestCase):
+class TestStorage(unittest.TestCase):
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_returns_dict(self):
-        """Test that all returns a dictionaty"""
+        """Test that all returns a dictionary"""
         self.assertIs(type(models.storage.all()), dict)
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
@@ -86,3 +86,57 @@ class TestFileStorage(unittest.TestCase):
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
+        
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_get(self):
+        """Test that get retrieves the correct object"""
+        
+        state = State(name="California")
+        city = City(name="San Francisco", state_id=state.id)
+        user = User(email="user@example.com", password="password")
+        self.storage.new(state)
+        self.storage.new(city)
+        self.storage.new(user)
+        self.storage.save()
+
+        """Test get method"""
+        retrieved_state = self.storage.get(State, state.id)
+        self.assertIsNotNone(retrieved_state)
+        self.assertEqual(retrieved_state.id, state.id)
+        self.assertEqual(retrieved_state.name, "California")
+
+        retrieved_user = self.storage.get(User, user.id)
+        self.assertIsNotNone(retrieved_user)
+        self.assertEqual(retrieved_user.email, "user@example.com")
+
+        non_existent = self.storage.get(State, "nonexistent_id")
+        self.assertIsNone(non_existent)
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_count(self):
+        """Test that count returns the correct number of objects"""
+        
+        """Create new objects and save them"""
+        state = State(name="California")
+        city = City(name="San Francisco", state_id=state.id)
+        user = User(email="user@example.com", password="password")
+        self.storage.new(state)
+        self.storage.new(city)
+        self.storage.new(user)
+        self.storage.save()
+
+        """ Test count method"""
+        total_count = self.storage.count()
+        self.assertEqual(total_count, 3)
+
+        state_count = self.storage.count(State)
+        self.assertEqual(state_count, 1)
+
+        city_count = self.storage.count(City)
+        self.assertEqual(city_count, 1)
+
+        user_count = self.storage.count(User)
+        self.assertEqual(user_count, 1)
+
+        non_existent_count = self.storage.count("NonExistentClass")
+        self.assertEqual(non_existent_count, 0)
