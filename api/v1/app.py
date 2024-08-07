@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-"""An app handler """
+"""An app handler 
+"""
 
 from models import storage
 from app.v1.views import app_views
